@@ -1,0 +1,230 @@
+q1
+// Opt pages replacement algorithm
+#include <stdio.h>
+
+int main()
+{
+    int fr, np, frames[10], pages[30], temp[10], flag1, flag2, flag3;
+    int i, j, k, pos, max, faults = 0;
+    printf("Enter number of frames: ");
+    scanf("%d", &fr);
+
+    printf("Enter number of pages: ");
+    scanf("%d", &np);
+
+    printf("Enter page reference string: ");
+
+    for (i = 0; i < np; ++i)
+    {
+        scanf("%d", &pages[i]);
+    }
+
+    for (i = 0; i < fr; ++i)
+    {
+        frames[i] = -1;
+    }
+    printf(" \n-------Page Frames--------\n ");
+    printf(" \nFr1\tFr2\tFr3\n");
+    printf("\n------------------------------------");
+    for (i = 0; i < np; ++i)
+    {
+        flag1 = flag2 = 0;
+
+        for (j = 0; j < fr; ++j)
+        {
+            if (frames[j] == pages[i])
+            {
+                flag1 = flag2 = 1;
+                break;
+            }
+        }
+
+        if (flag1 == 0)
+        {
+            for (j = 0; j < fr; ++j)
+            {
+                if (frames[j] == -1)
+                {
+                    faults++;
+                    frames[j] = pages[i];
+                    flag2 = 1;
+                    break;
+                }
+            }
+        }
+
+        if (flag2 == 0)
+        {
+            flag3 = 0;
+            for (j = 0; j < fr; ++j)
+            {
+                temp[j] = -1;
+                for (k = i + 1; k < np; ++k)
+                    if (frames[j] == pages[k])
+                    {
+                        temp[j] = k;
+                        break;
+                    }
+            }
+            for (j = 0; j < fr; ++j)
+                if (temp[j] == -1)
+                {
+                    pos = j;
+                    flag3 = 1;
+                    break;
+                }
+
+            if (flag3 == 0)
+            {
+                max = temp[0];
+                pos = 0;
+
+                for (j = 1; j < fr; ++j)
+                    if (temp[j] > max)
+                    {
+                        max = temp[j];
+                        pos = j;
+                    }
+            }
+            frames[pos] = pages[i];
+            faults++;
+        }
+
+        printf("\n");
+
+        for (j = 0; j < fr; ++j)
+            printf("%d\t", frames[j]);
+    }
+    printf("\n------------------------------------");
+    int hit = np - faults;
+    printf("\n\nTotal Page Faults = %d", faults);
+    printf("\n\nTotal Page Hits = %d", hit);
+    return 0;
+}
+
+q2
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+#define MAX_INPUT_SIZE 1024
+#define MAX_TOKENS 100
+
+void executeCommand(char **tokens);
+void searchAllOccurrences(char *filename, char *pattern);
+void countOccurrences(char *filename, char *pattern);
+
+int main() {
+    char input[MAX_INPUT_SIZE];
+    char *tokens[MAX_TOKENS];
+    char *token;
+    int tokenCount;
+
+    while (1) {
+        // Displaying the command prompt
+        printf("myshell$ ");
+        
+        // Reading input from the user
+        fgets(input, sizeof(input), stdin);
+
+        // Remove the newline character from the input
+        input[strcspn(input, "\n")] = '\0';
+
+        // Tokenizing the input
+        token = strtok(input, " ");
+        tokenCount = 0;
+
+        while (token != NULL && tokenCount < MAX_TOKENS - 1) {
+            tokens[tokenCount++] = token;
+            token = strtok(NULL, " ");
+        }
+
+        // Setting the last element of the tokens array to NULL for execvp
+        tokens[tokenCount] = NULL;
+
+        // Checking for specific commands
+        if (tokenCount > 1 && strcmp(tokens[0], "search") == 0) {
+            if (strcmp(tokens[1], "a") == 0) {
+                // Search for all occurrences of the pattern in the file
+                searchAllOccurrences(tokens[2], tokens[3]);
+            } else if (strcmp(tokens[1], "c") == 0) {
+                // Count the number of occurrences of the pattern in the file
+                countOccurrences(tokens[2], tokens[3]);
+            } else {
+                printf("Invalid command\n");
+            }
+        } else {
+            // Execute the command in a child process
+            executeCommand(tokens);
+        }
+    }
+
+    return 0;
+}
+
+void executeCommand(char **tokens) {
+    pid_t pid = fork();
+
+    if (pid < 0) {
+        perror("Fork failed");
+    } else if (pid == 0) {
+        // Child process
+        if (execvp(tokens[0], tokens) == -1) {
+            perror("Execution failed");
+        }
+        exit(EXIT_FAILURE);
+    } else {
+        // Parent process
+        int status;
+        waitpid(pid, &status, 0);
+
+        if (WIFEXITED(status) && WEXITSTATUS(status) != 0) {
+            printf("Command execution failed\n");
+        }
+    }
+}
+
+void searchAllOccurrences(char *filename, char *pattern) {
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        perror("Error opening file");
+        return;
+    }
+
+    char line[MAX_INPUT_SIZE];
+    int line_number = 1;
+
+    while (fgets(line, sizeof(line), file) != NULL) {
+        if (strstr(line, pattern) != NULL) {
+            printf("%s:%d: %s", filename, line_number, line);
+        }
+        line_number++;
+    }
+
+    fclose(file);
+}
+
+void countOccurrences(char *filename, char *pattern) {
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        perror("Error opening file");
+        return;
+    }
+
+    char line[MAX_INPUT_SIZE];
+    int count = 0;
+
+    while (fgets(line, sizeof(line), file) != NULL) {
+        char *pos = line;
+        while ((pos = strstr(pos, pattern)) != NULL) {
+            count++;
+            pos += strlen(pattern);
+        }
+    }
+
+    printf("Occurrences of '%s' in '%s': %d\n", pattern, filename, count);
+
+    fclose(file);
+}

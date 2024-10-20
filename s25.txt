@@ -1,0 +1,100 @@
+q2
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<unistd.h>
+#include<string.h>
+#include<sys/wait.h>
+#include<fcntl.h> // open,read(),close() : file related function
+void search(char *token2,char *fname,char*token4)
+{
+char s[80],buffer[40];
+int i=0,cnt=0,lc=1,fp;
+fp=open(fname,O_RDONLY);
+if(fp==-1)
+{
+printf("\nfile not found");
+return;
+}
+while(read(fp,buffer,1)) //file found
+{
+if(buffer[0]=='\n')
+lc++;
+if( buffer[0]=='\n' || buffer[0]=='\t' || buffer[0]==' ' )//word found in line
+{
+s[i]='\0';
+i=0;
+if(strstr(s,token4))//pattern found
+{
+if(strcmp(token2,"f")==0)
+{
+printf("pattern \"%s\" found in \"%s\" at line no:%d\n",token4,s,lc);
+break;
+}// F end
+if(strcmp(token2,"c")==0)
+{
+cnt++;
+}// C end
+if(strcmp(token2,"a")==0)
+{
+printf("pattern \"%s\" found in \"%s\" at line no:%d\n",token4,s,lc);
+}// A end
+}//end pattern found
+}//if word end
+else //char found
+{
+s[i]=buffer[0];
+i++;
+}//char found else end
+}// end while
+if(strcmp(token2,"c")==0)
+printf("\ntotal occurances=%d",cnt);
+}//search end
+int main()
+{
+char cmd[80],tok1[10],tok2[10],tok3[10],tok4[10];
+int n;
+while(1)
+{
+printf("\nMYSHELL $]");
+fgets(cmd,80,stdin);
+n=sscanf(cmd,"%s%s%s%s",tok1,tok2,tok3,tok4);
+switch(n)
+{
+case 1:
+if(fork()==0)
+{
+execlp(tok1,tok1,NULL);
+}
+wait(0);
+break;
+case 2 :
+if(fork()==0)
+{ execlp(tok1,tok1,tok2,NULL);
+}
+wait(0);
+break;
+case 3:
+if(fork()==0)
+{
+execlp(tok1,tok1,tok2,tok3,NULL);
+}
+wait(0);
+break;
+case 4 :
+if(strcmp(tok1,"search")==0)
+{
+search(tok2,tok3,tok4);
+}
+else
+{
+if(fork()==0)
+{
+execlp(tok1,tok1,tok2,tok3,tok4,NULL);
+}
+wait(0);
+}
+break;
+}
+}
+}

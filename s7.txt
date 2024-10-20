@@ -1,0 +1,205 @@
+q1
+// Opt pages replacement algorithm
+#include <stdio.h>
+
+int main()
+{
+    int fr, np, frames[10], pages[30], temp[10], flag1, flag2, flag3;
+    int i, j, k, pos, max, faults = 0;
+    printf("Enter number of frames: ");
+    scanf("%d", &fr);
+
+    printf("Enter number of pages: ");
+    scanf("%d", &np);
+
+    printf("Enter page reference string: ");
+
+    for (i = 0; i < np; ++i)
+    {
+        scanf("%d", &pages[i]);
+    }
+
+    for (i = 0; i < fr; ++i)
+    {
+        frames[i] = -1;
+    }
+    printf(" \n-------Page Frames--------\n ");
+    printf(" \nFr1\tFr2\tFr3\n");
+    printf("\n------------------------------------");
+    for (i = 0; i < np; ++i)
+    {
+        flag1 = flag2 = 0;
+
+        for (j = 0; j < fr; ++j)
+        {
+            if (frames[j] == pages[i])
+            {
+                flag1 = flag2 = 1;
+                break;
+            }
+        }
+
+        if (flag1 == 0)
+        {
+            for (j = 0; j < fr; ++j)
+            {
+                if (frames[j] == -1)
+                {
+                    faults++;
+                    frames[j] = pages[i];
+                    flag2 = 1;
+                    break;
+                }
+            }
+        }
+
+        if (flag2 == 0)
+        {
+            flag3 = 0;
+            for (j = 0; j < fr; ++j)
+            {
+                temp[j] = -1;
+                for (k = i + 1; k < np; ++k)
+                    if (frames[j] == pages[k])
+                    {
+                        temp[j] = k;
+                        break;
+                    }
+            }
+            for (j = 0; j < fr; ++j)
+                if (temp[j] == -1)
+                {
+                    pos = j;
+                    flag3 = 1;
+                    break;
+                }
+
+            if (flag3 == 0)
+            {
+                max = temp[0];
+                pos = 0;
+
+                for (j = 1; j < fr; ++j)
+                    if (temp[j] > max)
+                    {
+                        max = temp[j];
+                        pos = j;
+                    }
+            }
+            frames[pos] = pages[i];
+            faults++;
+        }
+
+        printf("\n");
+
+        for (j = 0; j < fr; ++j)
+            printf("%d\t", frames[j]);
+    }
+    printf("\n------------------------------------");
+    int hit = np - faults;
+    printf("\n\nTotal Page Faults = %d", faults);
+    printf("\n\nTotal Page Hits = %d", hit);
+    return 0;
+}
+
+
+q2
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<unistd.h>
+#include<string.h>
+#include<sys/wait.h>
+#include<fcntl.h> // open,read(),close() : file related function
+void search(char *token2,char *fname,char*token4)
+{
+char s[80],buffer[40];
+int i=0,cnt=0,lc=1,fp;
+fp=open(fname,O_RDONLY);
+if(fp==-1)
+{
+printf("\nfile not found");
+return;
+}
+while(read(fp,buffer,1)) //file found
+{
+if(buffer[0]=='\n')
+lc++;
+if( buffer[0]=='\n' || buffer[0]=='\t' || buffer[0]==' ' )//word found in line
+{
+s[i]='\0';
+i=0;
+if(strstr(s,token4))//pattern found
+{
+if(strcmp(token2,"f")==0)
+{
+printf("pattern \"%s\" found in \"%s\" at line no:%d\n",token4,s,lc);
+break;
+}// F end
+if(strcmp(token2,"c")==0)
+{
+cnt++;
+}// C end
+if(strcmp(token2,"a")==0)
+{
+printf("pattern \"%s\" found in \"%s\" at line no:%d\n",token4,s,lc);
+}// A end
+}//end pattern found
+}//if word end
+else //char found
+{
+s[i]=buffer[0];
+i++;
+}//char found else end
+}// end while
+if(strcmp(token2,"c")==0)
+printf("\ntotal occurances=%d",cnt);
+}//search end
+int main()
+{
+char cmd[80],tok1[10],tok2[10],tok3[10],tok4[10];
+int n;
+while(1)
+{
+printf("\nMYSHELL $]");
+fgets(cmd,80,stdin);
+n=sscanf(cmd,"%s%s%s%s",tok1,tok2,tok3,tok4);
+switch(n)
+{
+case 1:
+if(fork()==0)
+{
+execlp(tok1,tok1,NULL);
+}
+wait(0);
+break;
+case 2 :
+if(fork()==0)
+{ execlp(tok1,tok1,tok2,NULL);
+}
+wait(0);
+break;
+case 3:
+if(fork()==0)
+{
+execlp(tok1,tok1,tok2,tok3,NULL);
+}
+wait(0);
+break;
+case 4 :
+if(strcmp(tok1,"search")==0)
+{
+search(tok2,tok3,tok4);
+}
+else
+{
+if(fork()==0)
+{
+execlp(tok1,tok1,tok2,tok3,tok4,NULL);
+}
+wait(0);
+}
+break;
+}
+}
+}

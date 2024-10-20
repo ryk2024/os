@@ -1,0 +1,89 @@
+q1
+#include <stdio.h>
+#include <sys/types.h>
+#include <unistd.h>
+void main()
+{
+    int pid, r;
+    pid = fork();
+    for (int i = 1;; i++)
+    {
+        if (pid == 0)
+        {
+            r = nice(-20);
+            printf("Child gets higher CPU priority %d\n", r);
+            sleep(4);
+        }
+        else
+        {
+            r = nice(19);
+            printf("Parent gets higher CPU priority %d\n", r);
+            sleep(4);
+        }
+    }
+}
+
+q2
+
+#include <stdio.h>
+typedef struct Process
+{
+    int pid, bt, at, wt, tat, pri;
+} Process;
+Process pro[10];
+void swap(Process *a, Process *b)
+{
+    Process temp = *a;
+    *a = *b;
+    *b = temp;
+}
+void main()
+{
+    int i, j, k, n, total_wt = 0, total_tat = 0;
+    float avtat = 0, avwt = 0;
+    printf("Enter Number Of Processes : ");
+    scanf("%d", &n);
+    printf("Enter Arrival time : ");
+    for (i = 0; i < n; i++)
+    {
+        scanf("%d", &pro[i].at);
+        pro[i].pid = i;
+    }
+    printf("Enter Burst time : ");
+    for (i = 0; i < n; i++)
+        scanf("%d", &pro[i].bt);
+    printf("Enter Priority Of Processes : ");
+    for (i = 0; i < n; i++)
+        scanf("%d", &pro[i].pri);
+
+    for (i = 1; i < n - 1; i++)
+    {
+        for (j = 1; j < n - 1; j++)
+        {
+            if (pro[j].pri > pro[j + 1].pri)
+            {
+                swap(&pro[j], &pro[j + 1]);
+            }
+        }
+    }
+    pro[0].wt = 0;
+    for (i = 1; i < n; i++)
+    {
+        pro[i].wt = pro[i - 1].wt + pro[i - 1].bt;
+    }
+    for (i = 0; i < n; i++)
+    {
+        pro[i].tat = pro[i].wt + pro[i].bt;
+        total_tat += pro[i].tat;
+        total_wt += pro[i].wt;
+    }
+
+    avtat = total_tat / n;
+    avwt = total_wt / n;
+
+    printf("Process  AT      BT     WT      TAT\n");
+    for (i = 0; i < n; i++)
+        printf("%d\t%d\t%d\t%d\t%d\n", pro[i].pid, pro[i].at, pro[i].bt, pro[i].wt, pro[i].tat);
+
+    printf("AVTAT : %f\nAVWT : %f", avtat, avwt);
+}

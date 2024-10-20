@@ -1,0 +1,229 @@
+q1
+#include <stdio.h>
+#include <sys/types.h>
+#include <unistd.h>
+void cp();
+void pp();
+int main()
+{
+    pid_t pid;
+    pid = fork();
+    if (pid == 0)
+        cp();
+    else
+        pp();
+    return 0;
+}
+void cp()
+{
+    printf("\nI am Child Process: ");
+    printf("My id : %d\n", getpid());
+}
+void pp()
+{
+    printf("I am parent process: ");
+    printf("My id : %d\n", getppid());
+}
+
+q2
+
+// #include <stdio.h>
+
+// struct Process
+// {
+//     int at, bt, tat, wt, pid, pt, bt1;
+// };
+
+// void main()
+// {
+//     int n, i, j, k = 0, temp[20];
+//     int avgwt = 0, avgtat = 0;
+//     printf("\n Enter the number of processes : ");
+//     scanf("%d", &n);
+//     struct Process p[n];
+//     for (i = 0; i < n; i++)
+//     {
+//         printf("\n Enter Arrival Time for process P%d : ", i);
+//         scanf("%d", &p[i].at);
+//     }
+//     for (i = 0; i < n; i++)
+//     {
+//         printf("\n Enter Burst Time for process P%d : ", i);
+//         scanf("%d", &p[i].bt);
+//     }
+//     for (i = 0; i < n; i++)
+//     {
+//         printf("\n Enter Priority for process P%d : ", i);
+//         scanf("%d", &p[i].pt);
+//     }
+//     for (i = 0; i < n; i++)
+//     {
+//         p[i].pid = i;
+//         p[i].bt1 = p[i].bt;
+//         temp[i] = p[i].bt;
+//     }
+//     p[9].pt = 1000;
+//     int t, count = 0, short_p = 9;
+//     for (t = 0; count != n; t++)
+//     {
+//         short_p = 9;
+//         for (i = 0; i < n; i++)
+//         {
+//             if (p[short_p].pt > p[i].pt && p[i].at <= t && p[i].bt > 0)
+//             {
+//                 short_p = i;
+//             }
+//         }
+//         p[short_p].bt--;
+//         if (p[short_p].bt == 0)
+//         {
+//             count++;
+//             p[short_p].wt = t + 1 - p[short_p].at - temp[short_p];
+//             p[short_p].tat = t + 1 - p[short_p].at;
+//             avgwt = avgwt + p[short_p].wt;
+//             avgtat = avgtat + p[short_p].tat;
+//         }
+//     }
+
+//     printf("\n Process| AT | BT  |  WT |  TAT  ");
+//     printf("\n----------------------------------------\n");
+//     for (i = 0; i < n; i++)
+//         printf("  P%d|\t%d|\t%d|\t%d|\t%d|\n", p[i].pid, p[i].at, p[i].bt1, p[i].wt, p[i].tat);
+//     printf("\n Average Waiting Time = %d", avgwt / n);
+//     printf("\n Average TurnAround Time = %d\n", avgtat / n);
+// }
+
+// #include <stdio.h>
+
+// struct Process
+// {
+//     int at, bt, tat, wt, pid, pt, bt1;
+// };
+
+// void main()
+// {
+//     int n, i, j, k = 0, temp[20];
+//     int avgwt = 0, avgtat = 0;
+//     printf("\n Enter the number of processes : ");
+//     scanf("%d", &n);
+//     struct Process p[n];
+//     for (i = 0; i < n; i++)
+//     {
+//         printf("\n Enter Arrival Time for process P%d : ", i);
+//         scanf("%d", &p[i].at);
+//     }
+//     for (i = 0; i < n; i++)
+//     {
+//         printf("\n Enter Burst Time for process P%d : ", i);
+//         scanf("%d", &p[i].bt);
+//     }
+//     for (i = 0; i < n; i++)
+//     {
+//         printf("\n Enter Priority for process P%d : ", i);
+//         scanf("%d", &p[i].pt);
+//     }
+//     for (i = 0; i < n; i++)
+//     {
+//         p[i].pid = i;
+//         p[i].bt1 = p[i].bt;
+//         temp[i] = p[i].bt;
+//     }
+//     p[9].pt = 1000;
+//     int t, count = 0, short_p = 9;
+//     for (t = 0; count != n; t++)
+//     {
+//         short_p = 9;
+//         for (i = 0; i < n; i++)
+//         {
+//             if (p[short_p].pt > p[i].pt && p[i].at <= t && p[i].bt > 0)
+//             {
+//                 short_p = i;
+//             }
+//         }
+//         p[short_p].bt--;
+//         if (p[short_p].bt == 0)
+//         {
+//             count++;
+//             p[short_p].wt = t + 1 - p[short_p].at - temp[short_p];
+//             p[short_p].tat = t + 1 - p[short_p].at;
+//             avgwt = avgwt + p[short_p].wt;
+//             avgtat = avgtat + p[short_p].tat;
+//         }
+//     }
+
+//     printf("\n Process| AT | BT  |  WT |  TAT  ");
+//     printf("\n----------------------------------------\n");
+//     for (i = 0; i < n; i++)
+//         printf("  P%d|\t%d|\t%d|\t%d|\t%d|\n", p[i].pid, p[i].at, p[i].bt1, p[i].wt, p[i].tat);
+//     printf("\n Average Waiting Time = %d", avgwt / n);
+//     printf("\n Average TurnAround Time = %d\n", avgtat / n);
+// }
+
+
+
+#include <stdio.h>
+#define max 999
+#define max1 9
+struct Process
+{
+    int at, bt, tat, wt, pid, pt, bt1, ct;
+};
+
+void main()
+{
+    int n, i, j, k = 0, temp[20];
+    int avgwt = 0, avgtat = 0;
+    printf("\n Enter the number of processes : ");
+    scanf("%d", &n);
+    struct Process p[n];
+    for (i = 0; i < n; i++)
+    {
+        printf("\n Enter Arrival Time for process P%d : ", i);
+        scanf("%d", &p[i].at);
+    }
+    for (i = 0; i < n; i++)
+    {
+        printf("\n Enter Burst Time for process P%d : ", i);
+        scanf("%d", &p[i].bt);
+    }
+    for (i = 0; i < n; i++)
+    {
+        printf("\n Enter Priority for process P%d : ", i);
+        scanf("%d", &p[i].pt);
+    }
+    for (i = 0; i < n; i++)
+    {
+        p[i].pid = i;
+        p[i].bt1 = p[i].bt;
+        temp[i] = p[i].bt;
+    }
+    p[max1].pt = max;
+    int t, count = 0, short_p = max1;
+    printf("\n Process| AT | BT  |  WT |  TAT  ");
+    printf("\n----------------------------------------\n");
+    for (t = 0; count != n; t++)
+    {
+        short_p = max1;
+        for (i = 0; i < n; i++)
+        {
+            if (p[short_p].pt > p[i].pt && p[i].at <= t && p[i].bt > 0)
+            {
+                short_p = i;
+            }
+        }
+        p[short_p].bt--;
+        if (p[short_p].bt == 0)
+        {
+            count++;
+            p[short_p].ct = t+1;
+            p[short_p].wt = p[short_p].ct - p[short_p].at - temp[short_p];
+            p[short_p].tat = p[short_p].ct - p[short_p].at;
+            printf("  P%d|\t%d|\t%d|\t%d|\t%d|\n", p[short_p].pid, p[short_p].at, p[short_p].bt1, p[short_p].wt, p[short_p].tat);
+            avgwt = avgwt + p[short_p].wt;
+            avgtat = avgtat + p[short_p].tat;
+        }
+    }
+
+    printf("\n Average Waiting Time = %d", avgwt / n);
+    printf("\n Average TurnAround Time = %d\n", avgtat / n);
+}

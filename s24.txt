@@ -1,0 +1,157 @@
+q1
+#include <stdio.h>
+#include <sys/wait.h>
+#include <unistd.h>
+int n, a[10];
+void bubble();
+void insertion();
+int main()
+{
+    int i;
+    printf("\nEnter array size: ");
+    scanf("%d", &n);
+    for (i = 0; i < n; i++)
+    {
+        scanf("%d", &a[i]);
+    }
+    int pid = fork();
+    if (pid == 0)
+    {
+        printf("Child id : %d\n", getpid());
+        insertion();
+        printf("\n Sorted array elements are: ");
+        for (i = 0; i < n; i++)
+            printf("\t%d", a[i]);
+        printf("\n");
+    }
+    else
+    {
+        wait(NULL);
+        printf("Parent Process id : %d\n", getppid());
+        bubble();
+        printf("\n Sorted array Elements are :");
+        for (i = 0; i < n; i++)
+            printf("\t%d", a[i]);
+        printf("\n");
+    }
+}
+
+void bubble()
+{
+    int i, j, temp;
+    for (i = 0; i < n; i++)
+        for (j = i + 1; j < n; j++)
+            if (a[i] > a[j])
+            {
+                temp = a[i];
+                a[i] = a[j];
+                a[j] = temp;
+            }
+}
+
+void insertion()
+{
+    int i, j, k;
+    for (i = 1; i < n; i++)
+    {
+        k = a[i];
+        j = i - 1;
+        while (j >= 0 && a[j] > k)
+        {
+            a[j + 1] = a[j];
+            j--;
+        }
+        a[j + 1] = k;
+    }
+}
+
+q2
+
+#include <stdio.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <string.h>
+
+void make_toks(char *s, char *tok[])
+{
+    int i = 0;
+    char *p;
+
+    p = strtok(s, " ");
+    while (p != NULL)
+    {
+        tok[i++] = p;
+        p = strtok(NULL, " ");
+    }
+    tok[i] = NULL;
+}
+
+void count(char *fn, char op)
+{
+    int fh, cc = 0, wc = 0, lc = 0;
+    char c;
+    fh = open(fn, O_RDONLY);
+    if (fh == -1)
+    {
+        printf("FIle %s not found. \n", fn);
+        return;
+    }
+    while (read(fh, &c, 1) > 0)
+    {
+        if (c == ' ')
+            wc++;
+        else if (c == '\n')
+        {
+            wc++;
+            lc++;
+        }
+        cc++;
+    }
+    close(fh);
+
+    switch (op)
+    {
+    case 'c':
+        printf("no. of characters:%d", cc);
+        break;
+    case 'w':
+        printf("no. of words: %d\n", wc);
+        break;
+    case '|':
+        printf("no. of lines: %d\n", lc);
+        break;
+    }
+}
+
+int main()
+{
+    char buff[80], *args[10];
+    int pid;
+
+    while (1)
+    {
+        printf("myshell$");
+        fflush(stdin);
+        fgets(buff, 80, stdin);
+        buff[strlen(buff) - 1] = '\0';
+        make_toks(buff, args);
+        if (strcmp(args[0], "count") == 0)
+            count(args[2], args[1][0]);
+        else
+        {
+            pid = fork();
+            if (pid > 0)
+                wait(NULL);
+            else
+            {
+                if (execvp(args[0], args) == -1)
+                    printf("bad command.\n");
+            }
+        }
+    }
+    return 0;
+}

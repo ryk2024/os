@@ -1,0 +1,198 @@
+q1
+#include <stdio.h>
+struct page
+{
+    int pno;
+    int freq;
+} frames[20];
+int n;
+int page_found(int pno)
+{
+    for (int fno = 0; fno < n; fno++)
+    {
+        if (frames[fno].pno == pno)
+            return fno;
+    }
+    return -1;
+}
+int get_free_frame()
+{
+    int fno;
+    for (fno = 0; fno < n; fno++)
+    {
+        if (frames[fno].pno == -1)
+            return (fno);
+    }
+    return (-1);
+}
+int get_mfu_frame()
+{
+    int selfno = 0;
+    for (int fno = 1; fno < n; fno++)
+    {
+        if (frames[fno].freq > frames[selfno].freq)
+            selfno = fno;
+    }
+    return selfno;
+}
+int main()
+{
+    int p_request[20];
+    int size;
+    int page_falts = 0;
+    printf("\nHow many frames:");
+    scanf("%d", &n);
+    printf("enter size:");
+    scanf("%d", &size);
+    printf("enter string : ");
+    for (int i = 0; i < size; i++)
+    {
+        scanf("%d", &p_request[i]);
+    }
+
+    for (int i = 0; i < n; i++)
+    {
+        frames[i].pno = -1;
+        frames[i].freq = 0;
+    }
+    printf("\npageNo   page frames     page fault");
+    printf("\n_____________________");
+    for (int i = 0; i < size; i++)
+    {
+        int j = page_found(p_request[i]);
+        if (j == -1)
+        {
+            j = get_free_frame();
+            if (j == -1)
+                j = get_mfu_frame();
+            page_falts++;
+            frames[j].pno = p_request[i];
+            frames[j].freq = 1;
+            printf("\n%4d\t", p_request[i]);
+            for (int fno = 0; fno < n; fno++)
+                printf("%4d:%2d", frames[fno].pno, frames[fno].freq);
+            printf(":YES");
+        }
+        else
+        {
+            printf("\n%4d\t", p_request[i]);
+            frames[j].freq++;
+            for (int fno = 0; fno < n; fno++)
+                printf("%4d:%2d", frames[fno].pno, frames[fno].freq);
+            printf(":NO");
+        }
+    }
+    printf("\n__________________________");
+    printf("\n number of page_falts=%d", page_falts);
+    return 0;
+}
+
+q2
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+#define MAX_TOKENS 10
+#define MAX_COMMAND_LENGTH 100
+
+void search(char *option, char *pattern, char *filename)
+{
+    char line[1024], *ptr;
+    int cnt = 0;
+    FILE *fp;
+
+    fp = fopen(filename, "r");
+    if (fp == NULL)
+    {
+        printf("\nUnable to open the file\n");
+    }
+
+    while (fgets(line, sizeof(line), fp) != NULL)
+    {
+        switch (*option)
+        {
+        case 'a':
+            ptr = strstr(line, pattern);
+            if (ptr != NULL)
+                printf("%s\n", line);
+            break;
+
+        case 'c':
+            ptr = strstr(line, pattern);
+            while (ptr != NULL)
+            {
+                cnt++;
+                ptr = ptr + strlen(pattern);
+                ptr = strstr(ptr, pattern);
+            }
+            break;
+
+        default:
+            printf("Invalid option: %c\n", *option);
+            fclose(fp);
+            exit(1); // forcefully terminate if some error happens
+        }
+    }
+    if (*option == 'c')
+        printf("\nThe search string %s occurs %d times\n", pattern, cnt);
+    fclose(fp);
+}
+
+void main()
+{
+    char command[MAX_COMMAND_LENGTH];
+    char *tokens[MAX_TOKENS];
+    char *token;
+    char *delimiters = " \t\n";
+
+    while (1)
+    {
+        printf("myshell$ ");
+
+        if (fgets(command, sizeof(command), stdin) == NULL)
+        {
+            break;
+        }
+
+        int token_count = 0;
+        token = strtok(command, delimiters);
+
+        while (token != NULL && token_count < MAX_TOKENS - 1)
+        {
+            tokens[token_count] = token;
+            token = strtok(NULL, delimiters);
+            token_count++;
+        }
+        tokens[token_count] = NULL;
+
+        if (token_count >= 4 && strcmp(tokens[0], "search") == 0)
+        {
+            search(tokens[1], tokens[2], tokens[3]);
+        }
+        else
+        {
+            pid_t pid = fork();
+
+            if (pid < 0)
+            {
+                perror("fork");
+            }
+            else if (pid == 0)
+            {
+                if (execvp(tokens[0], tokens) == -1)
+                {
+                    printf("command not found\n");
+                }
+            }
+            else
+            {
+                int status;
+                waitpid(pid, &status, 0);
+            }
+        }
+    }
+}
